@@ -22,9 +22,9 @@
 ```bash
 --prefix-archive-path
 ```
-- длительность видео сегмента в секундах, по умолчанию 30
+- длительность видео сегмента в секундах, по умолчанию 10
 ```bash
---duration-video-file
+--duration-file
 ```
 - уровень логирования приложения (debug, info, warning, error), по умолчанию info
 ```bash

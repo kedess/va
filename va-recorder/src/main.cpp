@@ -52,8 +52,8 @@ int main(int argc, char *argv[]) {
         opt::options_description desc("all options");
         desc.add_options()("prefix-archive-path", opt::value<std::string>()->default_value("/tmp/va"),
                            "prefix of the path for saving video files, default '/tmp/va'");
-        desc.add_options()("duration-video-file", opt::value<int64_t>()->default_value(30),
-                           "duration video file seconds, default 30 secs");
+        desc.add_options()("duration-file", opt::value<int64_t>()->default_value(10),
+                           "duration file seconds, default 10 secs");
         desc.add_options()("logging-level", opt::value<std::string>()->default_value("info"),
                            "logging level (debug, info, warning, error), default 'info'");
         desc.add_options()("source-file", opt::value<std::string>()->default_value("sources.json"),
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
         init_logging(vm["logging-level"].as<std::string>());
         app.prefix_archvie_path(vm["prefix-archive-path"].as<std::string>());
         app.source_file(vm["source-file"].as<std::string>());
-        app.duration_video_file(vm["duration-video-file"].as<int64_t>());
+        app.duration_file(vm["duration-file"].as<int64_t>());
     } catch (std::exception &ex) {
         BOOST_LOG_TRIVIAL(fatal) << "parse params error: " << ex.what();
         return 1;

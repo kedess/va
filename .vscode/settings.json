@@ -80,6 +80,9 @@
         "charconv": "cpp",
         "span": "cpp",
         "strstream": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "coroutine": "cpp",
+        "source_location": "cpp",
+        "future": "cpp"
     }
 }

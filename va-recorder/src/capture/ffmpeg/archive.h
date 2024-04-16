@@ -1,20 +1,41 @@
 #pragma once
 
 #include "avformat.h"
+#include <boost/log/trivial.hpp>
 #include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <string>
+
 extern "C" {
 #include <libavformat/avformat.h>
 }
+
+namespace fs = std::filesystem;
+
 namespace va {
     class Archive final {
     public:
         Archive(std::string &prefix_path, int64_t duration, std::vector<const AVCodecParameters *> params_list)
-            : prefix_path_(prefix_path), duration_video_file_(duration), params_list_(params_list) {
+            : prefix_path_(prefix_path), duration_file_(duration), params_list_(params_list) {
         }
         ~Archive() {
             if (ctx_) {
                 av_write_trailer(ctx_.get());
+                BOOST_LOG_TRIVIAL(debug) << "file " << current_file_ << " recording has finished";
+                if (start_pts_pkt_ != AV_NOPTS_VALUE && current_pts_pkt_ != AV_NOPTS_VALUE && time_base_) {
+                    auto time_base = time_base_.value();
+                    size_t start{current_file_.find(".ts")};
+                    fs::path path{current_file_.replace(start, 3, ".stat")};
+                    std::ofstream ofs(path);
+                    ofs << static_cast<double>((current_pts_pkt_ - start_pts_pkt_)) * time_base.num / time_base.den;
+                } else {
+                    // TODO: Предполагаю длительность файла равна duration_file_
+                    size_t start{current_file_.find(".ts")};
+                    fs::path path{current_file_.replace(start, 3, ".stat")};
+                    std::ofstream ofs(path);
+                    ofs << static_cast<double>(duration_file_);
+                }
             }
         }
         Archive(const Archive &) = delete;
@@ -27,7 +48,10 @@ namespace va {
         std::chrono::steady_clock::time_point time_point_;
         std::string prefix_path_;
         std::string current_file_;
-        int64_t duration_video_file_;
+        int64_t duration_file_;
+        int64_t start_pts_pkt_ = AV_NOPTS_VALUE;
+        int64_t current_pts_pkt_ = AV_NOPTS_VALUE;
+        std::optional<AVRational> time_base_;
         std::vector<const AVCodecParameters *> params_list_;
         std::unique_ptr<AVFormatContext, void (*)(AVFormatContext *ctx)> ctx_ = va_avformat_null_alloc_output_context();
     };

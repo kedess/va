@@ -34,7 +34,7 @@ namespace va {
         App &operator=(App &&) = delete;
         void run_in_stream(const Source &source) {
             auto prefix_path{prefix_archive_path_};
-            auto duration{duration_video_file_};
+            auto duration{duration_file_};
             std::jthread th([=](std::stop_token stoken) {
                 Capture<FFMPEGCapture> capture(source);
                 capture.run(stoken, prefix_path, duration);
@@ -54,17 +54,17 @@ namespace va {
         void source_file(const std::string &source_file) {
             source_file_ = source_file;
         }
-        int64_t duration_video_file() const {
-            return duration_video_file_;
+        int64_t duration_file() const {
+            return duration_file_;
         }
-        void duration_video_file(int64_t duration_video_file) {
-            duration_video_file_ = duration_video_file;
+        void duration_file(int64_t duration_video_file) {
+            duration_file_ = duration_video_file;
         }
 
     private:
         std::vector<std::jthread> threads_;
         std::string prefix_archive_path_;
         std::string source_file_;
-        int64_t duration_video_file_ = 30;
+        int64_t duration_file_ = 30;
     };
 } // namespace va
