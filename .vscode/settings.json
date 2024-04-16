@@ -81,6 +81,7 @@
         "span": "cpp",
         "strstream": "cpp",
         "cfenv": "cpp",
+        "*.ipp": "cpp",
         "coroutine": "cpp",
         "source_location": "cpp",
         "future": "cpp"
