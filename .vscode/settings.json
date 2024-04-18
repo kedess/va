@@ -85,6 +85,8 @@
         "coroutine": "cpp",
         "source_location": "cpp",
         "future": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "shared_mutex": "cpp",
+        "stdfloat": "cpp"
     }
 }

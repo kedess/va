@@ -14,10 +14,10 @@ using boost::asio::ip::tcp;
 constexpr size_t buffer_length = 4 * 1024;
 
 const char *BAD_REUEST =
-    "HTTP/1.1 400\r\nContent-Type: text/plain\r\nContent-Length: 0\r\nAccept-Ranges: bytes\r\n\r\n";
+    "HTTP/1.1 400\r\nContent-Type: text/plain\r\nContent-Length: {}\r\nAccept-Ranges: bytes\r\n\r\n";
 const size_t BAD_REUEST_SIZE = strlen(BAD_REUEST);
 const char *NOT_FOUND_REUEST =
-    "HTTP/1.1 404\r\nContent-Type: text/plain\r\nContent-Length: 0\r\nAccept-Ranges: bytes\r\n\r\n";
+    "HTTP/1.1 404\r\nContent-Type: text/plain\r\nContent-Length: {}\r\nAccept-Ranges: bytes\r\n\r\n";
 const size_t NOT_FOUND_REUEST_SIZE = strlen(NOT_FOUND_REUEST);
 
 namespace va {

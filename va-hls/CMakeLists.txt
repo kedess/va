@@ -51,7 +51,7 @@ else()
     )
 endif ()
 
-find_package( Boost 1.74 COMPONENTS log program_options system thread REQUIRED)
+find_package( Boost COMPONENTS log program_options system thread REQUIRED)
 include_directories( ${Boost_INCLUDE_DIR} )
 
 set(SRC_FILES
