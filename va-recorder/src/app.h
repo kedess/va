@@ -11,7 +11,7 @@ namespace va {
     class App final {
     public:
         App() {
-            BOOST_LOG_TRIVIAL(info) << "application " << PROJECT_NAME << " has been successfully launched "
+            BOOST_LOG_TRIVIAL(info) << "application " << PROJECT_NAME << " has been started"
                                     << " ver." << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH;
             BOOST_LOG_TRIVIAL(info) << "boost version " << BOOST_VERSION / 100000 << "." << BOOST_VERSION / 100 % 1000
                                     << "." << BOOST_VERSION % 100;
@@ -26,7 +26,7 @@ namespace va {
                     thread.join();
                 }
             }
-            BOOST_LOG_TRIVIAL(info) << "application has been successfully stopped";
+            BOOST_LOG_TRIVIAL(info) << "application has been stopped";
         }
         App(const App &) = delete;
         App &operator=(const App &) = delete;
