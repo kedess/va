@@ -1,8 +1,8 @@
 #pragma once
+#include "../../version.h"
 #include "capture/capture.h"
 #include "capture/ffmpeg/backend.h"
 #include "source/source.h"
-#include "version.h"
 #include <boost/log/trivial.hpp>
 #include <boost/version.hpp>
 #include <thread>
@@ -11,7 +11,7 @@ namespace va {
     class App final {
     public:
         App() {
-            BOOST_LOG_TRIVIAL(info) << "application " << PROJECT_NAME << " has been started"
+            BOOST_LOG_TRIVIAL(info) << "module va-record has been started"
                                     << " ver." << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH;
             BOOST_LOG_TRIVIAL(info) << "boost version " << BOOST_VERSION / 100000 << "." << BOOST_VERSION / 100 % 1000
                                     << "." << BOOST_VERSION % 100;

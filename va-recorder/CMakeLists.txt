@@ -68,8 +68,6 @@ set(SRC_FILES
 
 include_directories(${FFMPEG_INCLUDE_DIRS})
 
-configure_file (version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/version.h @ONLY)
-
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 
 target_link_libraries(${PROJECT_NAME} ${FFMPEG_LIBRARIES} ${Boost_LIBRARIES})

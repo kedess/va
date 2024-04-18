@@ -6,10 +6,10 @@
 #include <csignal>
 #include <thread>
 
+#include "../../version.h"
 #include "server.h"
 #include "settings.h"
 #include "state/state.h"
-#include "version.h"
 
 namespace opt = boost::program_options;
 namespace logging = boost::log;
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     signal(SIGINT, siginthandler);
-    BOOST_LOG_TRIVIAL(info) << "application " << PROJECT_NAME << " has been started "
+    BOOST_LOG_TRIVIAL(info) << "module va-hls has been started "
                             << "ver." << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH;
     BOOST_LOG_TRIVIAL(info) << "boost version " << BOOST_VERSION / 100000 << "." << BOOST_VERSION / 100 % 1000 << "."
                             << BOOST_VERSION % 100;

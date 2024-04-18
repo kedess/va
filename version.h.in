@@ -1,0 +1,9 @@
+#ifndef VERSION_H_IN
+#define VERSION_H_IN
+
+#define PROJECT_NAME "va"
+#define VERSION_MAJOR "@va_VERSION_MAJOR@"
+#define VERSION_MINOR "@va_VERSION_MINOR@"
+#define VERSION_PATCH "@va_VERSION_PATCH@"
+
+#endif

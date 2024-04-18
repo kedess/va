@@ -1,9 +1,0 @@
-#ifndef VERSION_H_IN
-#define VERSION_H_IN
-
-#define PROJECT_NAME "va-hls"
-#define VERSION_MAJOR "@va-hls_VERSION_MAJOR@"
-#define VERSION_MINOR "@va-hls_VERSION_MINOR@"
-#define VERSION_PATCH "@va-hls_VERSION_PATCH@"
-
-#endif
