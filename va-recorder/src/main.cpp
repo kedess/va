@@ -8,6 +8,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/program_options.hpp>
 #include <csignal>
+#include <cstdlib>
 #include <memory>
 #include <thread>
 
@@ -64,7 +65,7 @@ int main(int argc, char *argv[]) {
         opt::notify(vm);
         if (vm.count("help")) {
             std::cout << desc << "\n";
-            return 1;
+            return EXIT_FAILURE;
         }
         init_logging(vm["logging-level"].as<std::string>());
         app.prefix_archvie_path(vm["prefix-archive-path"].as<std::string>());
@@ -72,7 +73,7 @@ int main(int argc, char *argv[]) {
         app.duration_file(vm["duration-file"].as<int64_t>());
     } catch (std::exception &ex) {
         BOOST_LOG_TRIVIAL(fatal) << "parse params error: " << ex.what();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     signal(SIGINT, siginthandler);
@@ -95,8 +96,7 @@ int main(int argc, char *argv[]) {
         }
     } catch (std::exception &ex) {
         BOOST_LOG_TRIVIAL(fatal) << ex.what();
-        return 1;
+        return EXIT_FAILURE;
     }
-
-    return 0;
+    return EXIT_SUCCESS;
 }
