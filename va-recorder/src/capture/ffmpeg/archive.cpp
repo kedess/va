@@ -18,7 +18,11 @@ namespace va {
                     size_t start{current_file_.rfind(".ts")};
                     fs::path path{current_file_.replace(start, 3, ".stat")};
                     std::ofstream ofs(path);
-                    ofs << static_cast<double>((current_pts_pkt_ - start_pts_pkt_)) * time_base.num / time_base.den;
+                    ofs << "START_DATA" << std::endl;
+                    ofs << static_cast<double>((current_pts_pkt_ - start_pts_pkt_)) * time_base.num / time_base.den
+                        << std::endl;
+                    ofs << "END_DATA";
+
                 } else {
                     // TODO: Предполагаю длительность файла равна duration_file_
                     size_t start{current_file_.rfind(".ts")};

@@ -20,15 +20,18 @@ const char *HEADER_PLAYLIST =
     "#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-MEDIA-SEQUENCE:0\n#EXT-X-ALLOW-CACHE:YES\n#EXT-X-TARGETDURATION:10\n";
 const char *FOOTER_PLAYLIST = "#EXT-X-ENDLIST";
 
-struct ParamsRequest {
-    std::string stream_id;
-    std::string year;
-    std::string month;
-    std::string day;
-    std::string hour;
-};
-
 namespace {
+    struct ParamsRequest {
+        std::string stream_id;
+        std::string year;
+        std::string month;
+        std::string day;
+        std::string hour;
+    };
+    struct Stat {
+        double duration;
+        bool is_valid = false;
+    };
     std::vector<std::string> split(const std::string &s, char delim) {
         std::vector<std::string> elems;
         std::stringstream ss(s);
@@ -45,6 +48,25 @@ namespace {
         }
         return {elems[1], elems[2], elems[3], elems[4], elems[5]};
     }
+    Stat parse_stat(const std::string &path) {
+        std::ifstream in(path);
+        std::string start_marker, end_marker;
+        double duration;
+        in >> start_marker;
+        if (in.eof()) {
+            return {0, false};
+        }
+        in >> duration;
+        if (in.eof()) {
+            return {0, false};
+        }
+        in >> end_marker;
+        if (start_marker == "START_DATA" && end_marker == "END_DATA") {
+            return {duration, true};
+        }
+        return {0, false};
+    }
+
 } // namespace
 
 namespace va {
@@ -52,8 +74,7 @@ namespace va {
         auto params = parse_uri(uri);
         auto path = std::format("{}/{}/{}/{}/{}/{}", settings.prefix_archive_path(), params.stream_id, params.year,
                                 params.month, params.day, params.hour);
-        std::set<fs::path> files;
-        std::set<fs::path> files_stat;
+        std::set<fs::path> files, files_stat;
         for (const auto &entry : fs::directory_iterator(path)) {
             auto file = entry.path();
             if (file.extension() == ".ts") {
@@ -77,11 +98,10 @@ namespace va {
         for (auto filename : intersection) {
             auto path_stat = std::format("{}/{}/{}/{}/{}/{}/{}.stat", settings.prefix_archive_path(), params.stream_id,
                                          params.year, params.month, params.day, params.hour, filename.c_str());
-            std::ifstream in(path_stat);
-            double duration;
-            if (in >> duration) {
+            auto stat = parse_stat(path_stat);
+            if (stat.is_valid) {
                 auto path = std::format("{}.ts", filename.c_str());
-                auto item = std::format("#EXTINF:{}\n{}\n", duration, path);
+                auto item = std::format("#EXTINF:{}\n{}\n", stat.duration, path);
                 playlist.append(item);
             }
         }
