@@ -53,15 +53,15 @@ namespace {
         std::string start_marker, end_marker;
         double duration;
         in >> start_marker;
-        if (in.eof()) {
+        if (!in) {
             return {0, false};
         }
         in >> duration;
-        if (in.eof()) {
+        if (!in) {
             return {0, false};
         }
         in >> end_marker;
-        if (start_marker == "START_DATA" && end_marker == "END_DATA") {
+        if (in && start_marker == "START_DATA" && end_marker == "END_DATA") {
             return {duration, true};
         }
         return {0, false};
