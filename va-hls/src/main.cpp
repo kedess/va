@@ -4,6 +4,7 @@
 #include <boost/program_options.hpp>
 #include <boost/version.hpp>
 #include <csignal>
+#include <iostream>
 #include <thread>
 
 #include "../../version.h"

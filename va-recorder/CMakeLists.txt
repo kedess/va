@@ -56,6 +56,8 @@ include_directories( ${Boost_INCLUDE_DIR} )
 
 set(SRC_FILES
     src/main.cpp
+    src/utils.cpp
+    src/app.cpp
     src/source/source.cpp
     src/state/state.cpp
     src/capture/ffmpeg/avformat.cpp

@@ -88,5 +88,6 @@
         "filesystem": "cpp",
         "shared_mutex": "cpp",
         "stdfloat": "cpp"
-    }
+    },
+    "C_Cpp.default.cppStandard": "c++20"
 }

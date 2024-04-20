@@ -5,7 +5,6 @@
 #include "source/source.h"
 #include <boost/log/trivial.hpp>
 #include <boost/version.hpp>
-#include <thread>
 
 namespace va {
     class App final {
@@ -32,15 +31,7 @@ namespace va {
         App &operator=(const App &) = delete;
         App(App &&) = delete;
         App &operator=(App &&) = delete;
-        void run_in_stream(const Source &source) {
-            auto prefix_path{prefix_archive_path_};
-            auto duration{duration_file_};
-            std::jthread th([=](std::stop_token stoken) {
-                Capture<FFMPEGCapture> capture(source);
-                capture.run(stoken, prefix_path, duration);
-            });
-            threads_.push_back(std::move(th));
-        }
+        void run_in_stream(const Source &source);
 
         const std::string &prefix_archive_path() const & {
             return prefix_archive_path_;
