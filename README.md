@@ -63,7 +63,7 @@
 
 Пример запроса HLS с помощью ffplay, время в UTC
 ```bash
-ffplay http://localhost:8888/2024/04/17/05/index.m3u8
+ffplay http://localhost:8888/camera-1/2024/04/17/05/index.m3u8
 ```
 
 ### Сборка
