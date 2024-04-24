@@ -8,15 +8,24 @@
 #include <thread>
 
 #include "../../version.h"
+#include "../../watcher/watcher.h"
+#include "playlist.h"
 #include "server.h"
 #include "settings.h"
 #include "state/state.h"
+#include "utils.h"
+#include <map>
+#include <queue>
+#include <shared_mutex>
 
 namespace opt = boost::program_options;
 namespace logging = boost::log;
 
 va::StateApp state;
 va::Settings settings;
+
+std::map<std::string, va::PlayList> playlists;
+std::shared_mutex mutex_playlists;
 
 volatile static std::sig_atomic_t signal_num = -1;
 void siginthandler(int param) {
@@ -67,14 +76,57 @@ int main(int argc, char *argv[]) {
                             << "ver." << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH;
     BOOST_LOG_TRIVIAL(info) << "boost version " << BOOST_VERSION / 100000 << "." << BOOST_VERSION / 100 % 1000 << "."
                             << BOOST_VERSION % 100;
+
+    std::jthread th_watcher([&](std::stop_token stoken) {
+        try {
+            va::Watcher watcher(settings.prefix_archive_path().c_str());
+            watcher.run(stoken, [&](std::string &path) {
+                if (path.ends_with(".ts")) {
+                    auto path_without_prefix = path.replace(0, settings.prefix_archive_path().size() + 1, "");
+                    auto parts = va::utils::split(path_without_prefix, '/');
+                    if (!parts.empty()) {
+                        auto stream_id = parts[0];
+                        std::unique_lock lock(mutex_playlists);
+                        auto it = playlists.find(stream_id);
+                        if (it == playlists.end()) {
+                            playlists[stream_id] = {0, {path}};
+                        } else {
+                            auto &queue_ref = playlists[stream_id].queue;
+                            auto it = std::find(queue_ref.begin(), queue_ref.end(), path);
+                            if (it == queue_ref.end()) {
+                                if (queue_ref.size() > 3) {
+                                    ++playlists[stream_id].index;
+                                    queue_ref.pop_front();
+                                }
+                                queue_ref.push_back(std::move(path_without_prefix));
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (std::exception &ex) {
+            BOOST_LOG_TRIVIAL(fatal) << ex.what();
+            BOOST_LOG_TRIVIAL(fatal) << "application will be stopped";
+            signal_num = SIGABRT;
+            state.stop_app();
+        }
+    });
+
     boost::asio::io_context io_context;
     std::thread th([&]() {
         va::Server server(io_context, settings.port());
         io_context.run();
     });
+
     state.wait_stop_app();
     io_context.stop();
-    th.join();
+    if (th.joinable()) {
+        th.join();
+    }
+    th_watcher.request_stop();
+    if (th_watcher.joinable()) {
+        th_watcher.join();
+    }
     BOOST_LOG_TRIVIAL(info) << "HLS has been stopped";
     BOOST_LOG_TRIVIAL(info) << "application has been stopped";
     return EXIT_SUCCESS;
