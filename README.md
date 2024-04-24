@@ -73,6 +73,7 @@ ffplay http://localhost:8888/camera-1/2024/04/17/05/index.m3u8
 ffplay http://localhost:8888/camera-1/index.m3u8
 ```
 Задержка Live трансляции от 20 - 40  секунд при файлах (5 с)
+
 Задержка Live трансляции от 40 - 60  секунд при файлах (10 с)
 
 ### Сборка
