@@ -1,8 +1,8 @@
+#include "../../common/state.h"
 #include "app.h"
 #include "capture/capture.h"
 #include "capture/ffmpeg/backend.h"
 #include "source/source.h"
-#include "state/state.h"
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>

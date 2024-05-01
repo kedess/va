@@ -4,29 +4,24 @@
 #include <boost/program_options.hpp>
 #include <boost/version.hpp>
 #include <csignal>
+#include <cstdlib>
 #include <iostream>
 #include <thread>
 
 #include "../../common/state.h"
+#include "../../common/thread-safe-queue.h"
 #include "../../common/utils.h"
 #include "../../version.h"
 #include "../../watcher/watcher.h"
-#include "playlist.h"
-#include "server.h"
+#include "executor.h"
 #include "settings.h"
-#include "utils.h"
-#include <map>
-#include <queue>
-#include <shared_mutex>
 
 namespace opt = boost::program_options;
 namespace logging = boost::log;
 
 va::StateApp state;
 va::Settings settings;
-
-std::map<std::string, va::PlayList> playlists;
-std::shared_mutex mutex_playlists;
+va::ThreadSafeQueue<std::string> queue;
 
 volatile static std::sig_atomic_t signal_num = -1;
 void siginthandler(int param) {
@@ -53,8 +48,12 @@ int main(int argc, char *argv[]) {
         opt::options_description desc("all options");
         desc.add_options()("prefix-archive-path", opt::value<std::string>()->default_value("/tmp/va"),
                            "prefix of the path for saving video files, default '/tmp/va'");
-        desc.add_options()("port", opt::value<uint16_t>()->default_value(8888),
-                           "listening port of the server, default 8888");
+        desc.add_options()("inference-server-address", opt::value<std::string>()->default_value("localhost"),
+                           "inference server address, default localhost");
+        desc.add_options()("inference-server-port", opt::value<int16_t>()->default_value(3030),
+                           "inference server port, default 3030");
+        desc.add_options()("num-threads", opt::value<size_t>()->default_value(1),
+                           "number of parallel threads, default 1");
         desc.add_options()("logging-level", opt::value<std::string>()->default_value("info"),
                            "logging level (debug, info, warning, error), default 'info'");
         desc.add_options()("help,h", "help");
@@ -67,42 +66,24 @@ int main(int argc, char *argv[]) {
         }
         init_logging(vm["logging-level"].as<std::string>());
         settings.prefix_archvie_path(vm["prefix-archive-path"].as<std::string>());
-        settings.port(vm["port"].as<uint16_t>());
+        settings.inference_server_address(vm["inference-server-address"].as<std::string>());
+        settings.inference_server_port(vm["inference-server-port"].as<int16_t>());
+        settings.num_threads(vm["num-threads"].as<size_t>());
     } catch (std::exception &ex) {
         BOOST_LOG_TRIVIAL(fatal) << "parse params error: " << ex.what();
         return EXIT_FAILURE;
     }
     signal(SIGINT, siginthandler);
-    BOOST_LOG_TRIVIAL(info) << "module va-hls has been started "
+    BOOST_LOG_TRIVIAL(info) << "module va-inference has been started "
                             << "ver." << VERSION_MAJOR << "." << VERSION_MINOR << "." << VERSION_PATCH;
     BOOST_LOG_TRIVIAL(info) << "boost version " << BOOST_VERSION / 100000 << "." << BOOST_VERSION / 100 % 1000 << "."
                             << BOOST_VERSION % 100;
-
     std::jthread th_watcher([&](std::stop_token stoken) {
         try {
             va::Watcher watcher(settings.prefix_archive_path().c_str());
             watcher.run(stoken, [&](std::string &path) {
                 if (path.ends_with(".ts")) {
-                    auto path_without_prefix = path.replace(0, settings.prefix_archive_path().size() + 1, "");
-                    auto parts = va::utils::split(path_without_prefix, '/');
-                    if (!parts.empty()) {
-                        auto stream_id = parts[0];
-                        std::unique_lock lock(mutex_playlists);
-                        auto it = playlists.find(stream_id);
-                        if (it == playlists.end()) {
-                            playlists[stream_id] = {0, {path}};
-                        } else {
-                            auto &queue_ref = playlists[stream_id].queue;
-                            auto it = std::find(queue_ref.begin(), queue_ref.end(), path);
-                            if (it == queue_ref.end()) {
-                                if (queue_ref.size() > 3) {
-                                    ++playlists[stream_id].index;
-                                    queue_ref.pop_front();
-                                }
-                                queue_ref.push_back(std::move(path_without_prefix));
-                            }
-                        }
-                    }
+                    queue.push(path);
                 }
             });
         } catch (std::exception &ex) {
@@ -112,23 +93,11 @@ int main(int argc, char *argv[]) {
             state.stop_app();
         }
     });
-
-    boost::asio::io_context io_context;
-    std::thread th([&]() {
-        va::Server server(io_context, settings.port());
-        io_context.run();
-    });
+    std::jthread th_executor([&](std::stop_token stoken) { va::Executor executor(settings, stoken); });
 
     state.wait_stop_app();
-    io_context.stop();
-    if (th.joinable()) {
-        th.join();
-    }
     th_watcher.request_stop();
-    if (th_watcher.joinable()) {
-        th_watcher.join();
-    }
-    BOOST_LOG_TRIVIAL(info) << "HLS has been stopped";
+    th_executor.request_stop();
     BOOST_LOG_TRIVIAL(info) << "application has been stopped";
     return EXIT_SUCCESS;
 }

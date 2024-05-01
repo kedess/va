@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(va-recorder VERSION 0.2.0)
+project(va-recorder)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -59,7 +59,6 @@ set(SRC_FILES
     src/utils.cpp
     src/app.cpp
     src/source/source.cpp
-    src/state/state.cpp
     src/capture/ffmpeg/avformat.cpp
     src/capture/ffmpeg/avpacket.cpp
     src/capture/ffmpeg/avframe.cpp

@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(va-hls)
-
-set(SRC_FILES src/pico/picohttpparser.c src/pico/picohttpparser.h)
-add_library(pico STATIC ${SRC_FILES})
+project(va-inference)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -56,11 +53,9 @@ include_directories( ${Boost_INCLUDE_DIR} )
 
 set(SRC_FILES
     src/main.cpp
-    src/server.cpp
-    src/session.cpp
-    src/utils.cpp
+    src/executor.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} pico)
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
