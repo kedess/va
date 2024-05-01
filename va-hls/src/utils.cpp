@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "../../common/utils.h"
 #include "pico/picohttpparser.h"
 #include "playlist.h"
 #include "settings.h"
@@ -35,10 +36,7 @@ namespace {
     struct ParamsRequestLive {
         std::string stream_id;
     };
-    struct Stat {
-        double duration;
-        bool is_valid = false;
-    };
+
     inline std::pair<Tag, std::variant<ParamsRequestArchive, ParamsRequestLive>> parse_uri(const std::string &uri) {
         auto elems = va::utils::split(uri, '/');
         if (elems.size() == 7) {
@@ -49,39 +47,11 @@ namespace {
         }
         throw std::runtime_error("could not parse uri, number of parameters is missing");
     }
-    Stat parse_stat(const std::string &path) {
-        std::ifstream in(path);
-        std::string start_marker, end_marker;
-        double duration;
-        in >> start_marker;
-        if (!in) {
-            return {0, false};
-        }
-        in >> duration;
-        if (!in) {
-            return {0, false};
-        }
-        in >> end_marker;
-        if (in && start_marker == "START_DATA" && end_marker == "END_DATA") {
-            return {duration, true};
-        }
-        return {0, false};
-    }
 
 } // namespace
 
 namespace va {
-    namespace utils {
-        std::vector<std::string> split(const std::string &s, char delim) {
-            std::vector<std::string> elems;
-            std::stringstream ss(s);
-            std::string item;
-            while (std::getline(ss, item, delim)) {
-                elems.push_back(item);
-            }
-            return elems;
-        }
-    } // namespace utils
+    // namespace utils
     std::optional<std::string> make_playlist(const std::string &uri) {
         auto [tag, variant] = parse_uri(uri);
         if (tag == Tag::Archive) {
@@ -90,35 +60,35 @@ namespace va {
             auto path = std::format("{}/{}/{}/{}/{}/{}", settings.prefix_archive_path(), params.stream_id, params.year,
                                     params.month, params.day, params.hour);
 
-            std::set<fs::path> files, files_stat;
+            std::set<fs::path> files, files_meta;
             for (const auto &entry : fs::directory_iterator(path)) {
                 auto file = entry.path();
                 if (file.extension() == ".ts") {
                     files.emplace(file.stem());
                 }
-                if (file.extension() == ".stat") {
-                    files_stat.emplace(file.stem());
+                if (file.extension() == ".meta") {
+                    files_meta.emplace(file.stem());
                 }
             }
 
             std::vector<fs::path> intersection;
             /*
              * В playlist включаются только файлы для которых известна их продолжительность,
-             * то есть присутствие файла filename.stat
+             * то есть присутствие файла filename.meta
              */
-            std::set_intersection(files.begin(), files.end(), files_stat.begin(), files_stat.end(),
+            std::set_intersection(files.begin(), files.end(), files_meta.begin(), files_meta.end(),
                                   std::back_inserter(intersection));
             if (intersection.empty()) {
                 return std::nullopt;
             }
             for (auto filename : intersection) {
-                auto path_stat =
-                    std::format("{}/{}/{}/{}/{}/{}/{}.stat", settings.prefix_archive_path(), params.stream_id,
+                auto path_meta =
+                    std::format("{}/{}/{}/{}/{}/{}/{}.meta", settings.prefix_archive_path(), params.stream_id,
                                 params.year, params.month, params.day, params.hour, filename.c_str());
-                auto stat = parse_stat(path_stat);
-                if (stat.is_valid) {
+                auto meta = va::utils::parse_metadatat_file(path_meta);
+                if (meta.is_valid) {
                     auto path = std::format("{}.ts", filename.c_str());
-                    auto item = std::format("#EXTINF:{}\n{}\n", stat.duration, path);
+                    auto item = std::format("#EXTINF:{}\n{}\n", meta.duration, path);
                     playlist.append(item);
                 }
             }
@@ -136,13 +106,12 @@ namespace va {
             }
             auto &queue_ref = playlists[params.stream_id].queue;
             for (auto path : queue_ref) {
-                auto path_stat = std::format("{}/{}", settings.prefix_archive_path(), path);
-                path_stat = path_stat.replace(path_stat.size() - 2, params.stream_id.size(), "stat");
-                std::cout << path_stat << std::endl;
-                auto stat = parse_stat(path_stat);
-                if (stat.is_valid) {
+                auto path_meta = std::format("{}/{}", settings.prefix_archive_path(), path);
+                path_meta = path_meta.replace(path_meta.size() - 2, params.stream_id.size(), "meta");
+                auto meta = va::utils::parse_metadatat_file(path_meta);
+                if (meta.is_valid) {
                     auto path_without_prefix = path.replace(0, params.stream_id.size() + 1, "");
-                    auto item = std::format("#EXTINF:{}\n{}\n", stat.duration, path);
+                    auto item = std::format("#EXTINF:{}\n{}\n", meta.duration, path);
                     playlist.append(item);
                 }
             }

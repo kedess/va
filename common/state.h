@@ -1,13 +1,10 @@
 #pragma once
 
+#include <atomic>
 #include <boost/log/trivial.hpp>
 #include <boost/version.hpp>
 #include <condition_variable>
 #include <mutex>
-
-extern "C" {
-#include <libavdevice/avdevice.h>
-}
 
 namespace va {
     class StateApp final {
@@ -18,10 +15,16 @@ namespace va {
         StateApp &operator=(const StateApp &) = delete;
         StateApp(StateApp &&) = delete;
         StateApp &operator=(StateApp &&) = delete;
-        void stop_app();
-        void wait_stop_app();
-        bool is_stop() {
-            return is_stop_.test();
+        void stop_app() {
+            std::unique_lock<std::mutex> lock(is_stop_mutex_);
+            is_stop_.test_and_set(std::memory_order_acquire);
+            is_stop_condvar_.notify_one();
+        }
+        void wait_stop_app() {
+            std::unique_lock<std::mutex> lock(is_stop_mutex_);
+            while (!is_stop_.test_and_set()) {
+                is_stop_condvar_.wait(lock);
+            }
         }
 
     private:
