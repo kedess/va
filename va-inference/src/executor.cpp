@@ -41,15 +41,15 @@ namespace va {
         boost::asio::streambuf buf;
         boost::asio::read_until(socket, buf, "\r\n\r\n");
         std::string s((std::istreambuf_iterator<char>(&buf)), std::istreambuf_iterator<char>());
-        size_t start{path.find(".ts")};
-        fs::path path_inference{path.replace(start, 3, ".infe")};
-        std::ofstream ofs(path);
+        size_t extension_pos{path.find(".ts")};
+        auto path_inference{path.replace(extension_pos, 3, ".infe")};
+        std::ofstream ofs(path_inference);
         ofs << s;
         boost::system::error_code ec;
         socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
         socket.close();
         if (!ofs) {
-            auto err_msg = std::format("could not write to file {}", path);
+            auto err_msg = std::format("could not write to file {}", path_inference);
             throw std::runtime_error(err_msg);
         }
     }

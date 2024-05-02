@@ -25,14 +25,16 @@ namespace va {
                 BOOST_LOG_TRIVIAL(debug) << "file " << current_file_ << " recording has finished";
                 if (start_pts_pkt_ != AV_NOPTS_VALUE && current_pts_pkt_ != AV_NOPTS_VALUE && time_base_) {
                     auto time_base = time_base_.value();
-                    size_t start{current_file_.find(".ts")};
-                    fs::path path{current_file_.replace(start, 3, ".meta")};
+                    size_t extention_pos{current_file_.find(".ts")};
+                    auto tmp = std::string(current_file_.begin(), current_file_.end());
+                    fs::path path{tmp.replace(extention_pos, 3, ".meta")};
                     std::ofstream ofs(path);
                     ofs << static_cast<double>((current_pts_pkt_ - start_pts_pkt_)) * time_base.num / time_base.den;
                 } else {
                     // TODO: Предполагаю длительность файла равна duration_file_
-                    size_t start{current_file_.find(".ts")};
-                    fs::path path{current_file_.replace(start, 3, ".meta")};
+                    size_t extension_pos{current_file_.find(".ts")};
+                    auto tmp = std::string(current_file_.begin(), current_file_.end());
+                    fs::path path{tmp.replace(extension_pos, 3, ".meta")};
                     std::ofstream ofs(path);
                     ofs << static_cast<double>(duration_file_);
                 }

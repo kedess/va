@@ -83,17 +83,18 @@ int main(int argc, char *argv[]) {
             va::Watcher watcher(settings.prefix_archive_path().c_str());
             watcher.run(stoken, [&](std::string &path) {
                 if (path.ends_with(".ts")) {
-                    auto path_without_prefix = path.replace(0, settings.prefix_archive_path().size() + 1, "");
+                    auto tmp = std::string(path.begin(), path.end());
+                    auto path_without_prefix = tmp.replace(0, settings.prefix_archive_path().size() + 1, "");
                     auto parts = va::utils::split(path_without_prefix, '/');
                     if (!parts.empty()) {
                         auto stream_id = parts[0];
                         std::unique_lock lock(mutex_playlists);
                         auto it = playlists.find(stream_id);
                         if (it == playlists.end()) {
-                            playlists[stream_id] = {0, {path}};
+                            playlists[stream_id] = {0, {path_without_prefix}};
                         } else {
                             auto &queue_ref = playlists[stream_id].queue;
-                            auto it = std::find(queue_ref.begin(), queue_ref.end(), path);
+                            auto it = std::find(queue_ref.begin(), queue_ref.end(), path_without_prefix);
                             if (it == queue_ref.end()) {
                                 if (queue_ref.size() > 3) {
                                     ++playlists[stream_id].index;

@@ -110,8 +110,9 @@ namespace va {
                 path_meta = path_meta.replace(path_meta.size() - 2, params.stream_id.size(), "meta");
                 auto meta = va::utils::parse_metadatat_file(path_meta);
                 if (meta.is_valid) {
-                    auto path_without_prefix = path.replace(0, params.stream_id.size() + 1, "");
-                    auto item = std::format("#EXTINF:{}\n{}\n", meta.duration, path);
+                    auto tmp = std::string(path.begin(), path.end());
+                    auto path_without_prefix = tmp.replace(0, params.stream_id.size() + 1, "");
+                    auto item = std::format("#EXTINF:{}\n{}\n", meta.duration, path_without_prefix);
                     playlist.append(item);
                 }
             }
