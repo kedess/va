@@ -22,8 +22,6 @@
 namespace opt = boost::program_options;
 namespace logging = boost::log;
 
-va::Settings settings;
-
 std::map<std::string, va::PlayList> playlists;
 std::shared_mutex mutex_playlists;
 
@@ -65,8 +63,8 @@ int main(int argc, char *argv[]) {
             return EXIT_FAILURE;
         }
         init_logging(vm["logging-level"].as<std::string>());
-        settings.prefix_archvie_path(vm["prefix-archive-path"].as<std::string>());
-        settings.port(vm["port"].as<uint16_t>());
+        va::Settings::instance().prefix_archvie_path(vm["prefix-archive-path"].as<std::string>());
+        va::Settings::instance().port(vm["port"].as<uint16_t>());
     } catch (std::exception &ex) {
         BOOST_LOG_TRIVIAL(fatal) << "parse params error: " << ex.what();
         return EXIT_FAILURE;
@@ -79,11 +77,12 @@ int main(int argc, char *argv[]) {
 
     std::jthread th_watcher([&](std::stop_token stoken) {
         try {
-            va::Watcher watcher(settings.prefix_archive_path().c_str());
+            va::Watcher watcher(va::Settings::instance().prefix_archive_path().c_str());
             watcher.run(stoken, [&](std::string &path) {
                 if (path.ends_with(".ts")) {
                     auto tmp = std::string(path.begin(), path.end());
-                    auto path_without_prefix = tmp.replace(0, settings.prefix_archive_path().size() + 1, "");
+                    auto path_without_prefix =
+                        tmp.replace(0, va::Settings::instance().prefix_archive_path().size() + 1, "");
                     auto parts = va::utils::split(path_without_prefix, '/');
                     if (!parts.empty()) {
                         auto stream_id = parts[0];
@@ -115,7 +114,7 @@ int main(int argc, char *argv[]) {
 
     boost::asio::io_context io_context;
     std::thread th([&]() {
-        va::Server server(io_context, settings.port());
+        va::Server server(io_context, va::Settings::instance().port());
         io_context.run();
     });
     va::StateApp::instance().wait_stop_app();

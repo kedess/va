@@ -5,6 +5,14 @@
 namespace va {
     class Settings final {
     public:
+        static Settings &instance() {
+            static Settings settings;
+            return settings;
+        }
+        Settings(const Settings &) = delete;
+        Settings &operator=(const Settings &) = delete;
+        Settings(Settings &&) = delete;
+        Settings &operator=(Settings &&) = delete;
         const std::string &prefix_archive_path() const & {
             return prefix_archive_path_;
         }
@@ -20,6 +28,8 @@ namespace va {
         }
 
     private:
+        Settings() {
+        }
         std::string prefix_archive_path_;
         uint16_t port_;
     };

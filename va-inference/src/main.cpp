@@ -19,7 +19,6 @@
 namespace opt = boost::program_options;
 namespace logging = boost::log;
 
-va::Settings settings;
 va::ThreadSafeQueue<std::string> queue;
 
 volatile static std::sig_atomic_t signal_num = -1;
@@ -64,10 +63,10 @@ int main(int argc, char *argv[]) {
             return EXIT_FAILURE;
         }
         init_logging(vm["logging-level"].as<std::string>());
-        settings.prefix_archvie_path(vm["prefix-archive-path"].as<std::string>());
-        settings.inference_server_address(vm["inference-server-address"].as<std::string>());
-        settings.inference_server_port(vm["inference-server-port"].as<int16_t>());
-        settings.num_threads(vm["num-threads"].as<size_t>());
+        va::Settings::instance().prefix_archvie_path(vm["prefix-archive-path"].as<std::string>());
+        va::Settings::instance().inference_server_address(vm["inference-server-address"].as<std::string>());
+        va::Settings::instance().inference_server_port(vm["inference-server-port"].as<int16_t>());
+        va::Settings::instance().num_threads(vm["num-threads"].as<size_t>());
     } catch (std::exception &ex) {
         BOOST_LOG_TRIVIAL(fatal) << "parse params error: " << ex.what();
         return EXIT_FAILURE;
@@ -79,7 +78,7 @@ int main(int argc, char *argv[]) {
                             << BOOST_VERSION % 100;
     std::jthread th_watcher([&](std::stop_token stoken) {
         try {
-            va::Watcher watcher(settings.prefix_archive_path().c_str());
+            va::Watcher watcher(va::Settings::instance().prefix_archive_path().c_str());
             watcher.run(stoken, [&](std::string &path) {
                 if (path.ends_with(".ts")) {
                     queue.push(path);
@@ -92,7 +91,7 @@ int main(int argc, char *argv[]) {
             va::StateApp::instance().stop_app();
         }
     });
-    std::jthread th_executor([&](std::stop_token stoken) { va::Executor executor(settings, stoken); });
+    std::jthread th_executor([&](std::stop_token stoken) { va::Executor executor(va::Settings::instance(), stoken); });
 
     va::StateApp::instance().wait_stop_app();
     th_watcher.request_stop();
