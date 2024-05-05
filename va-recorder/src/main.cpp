@@ -19,12 +19,10 @@ extern "C" {
 namespace opt = boost::program_options;
 namespace logging = boost::log;
 
-va::StateApp state;
-
 volatile static std::sig_atomic_t signal_num = -1;
 void siginthandler(int param) {
     signal_num = param;
-    state.stop_app();
+    va::StateApp::instance().stop_app();
     BOOST_LOG_TRIVIAL(info) << "stop signal has been received (" << param << ")";
 }
 
@@ -90,7 +88,7 @@ int main(int argc, char *argv[]) {
         }
         if (nstreams_success) {
             BOOST_LOG_TRIVIAL(info) << nstreams_success << "/" << sources.size() << " video sources will be launched";
-            state.wait_stop_app();
+            va::StateApp::instance().wait_stop_app();
         } else {
             BOOST_LOG_TRIVIAL(info) << "there are no video sources to launch";
         }

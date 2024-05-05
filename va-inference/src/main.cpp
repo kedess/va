@@ -19,14 +19,13 @@
 namespace opt = boost::program_options;
 namespace logging = boost::log;
 
-va::StateApp state;
 va::Settings settings;
 va::ThreadSafeQueue<std::string> queue;
 
 volatile static std::sig_atomic_t signal_num = -1;
 void siginthandler(int param) {
     signal_num = param;
-    state.stop_app();
+    va::StateApp::instance().stop_app();
     BOOST_LOG_TRIVIAL(info) << "stop signal has been received (" << param << ")";
 }
 void init_logging(const std::string &level) {
@@ -90,12 +89,12 @@ int main(int argc, char *argv[]) {
             BOOST_LOG_TRIVIAL(fatal) << ex.what();
             BOOST_LOG_TRIVIAL(fatal) << "application will be stopped";
             signal_num = SIGABRT;
-            state.stop_app();
+            va::StateApp::instance().stop_app();
         }
     });
     std::jthread th_executor([&](std::stop_token stoken) { va::Executor executor(settings, stoken); });
 
-    state.wait_stop_app();
+    va::StateApp::instance().wait_stop_app();
     th_watcher.request_stop();
     th_executor.request_stop();
     BOOST_LOG_TRIVIAL(info) << "application has been stopped";

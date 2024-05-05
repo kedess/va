@@ -9,7 +9,9 @@
 namespace va {
     class StateApp final {
     public:
-        StateApp() {
+        static StateApp &instance() {
+            static StateApp state;
+            return state;
         }
         StateApp(const StateApp &) = delete;
         StateApp &operator=(const StateApp &) = delete;
@@ -28,6 +30,8 @@ namespace va {
         }
 
     private:
+        StateApp() {
+        }
         std::condition_variable is_stop_condvar_;
         std::mutex is_stop_mutex_;
         std::atomic_flag is_stop_ = ATOMIC_FLAG_INIT;

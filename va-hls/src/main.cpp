@@ -22,7 +22,6 @@
 namespace opt = boost::program_options;
 namespace logging = boost::log;
 
-va::StateApp state;
 va::Settings settings;
 
 std::map<std::string, va::PlayList> playlists;
@@ -31,7 +30,7 @@ std::shared_mutex mutex_playlists;
 volatile static std::sig_atomic_t signal_num = -1;
 void siginthandler(int param) {
     signal_num = param;
-    state.stop_app();
+    va::StateApp::instance().stop_app();
     BOOST_LOG_TRIVIAL(info) << "stop signal has been received (" << param << ")";
 }
 void init_logging(const std::string &level) {
@@ -110,7 +109,7 @@ int main(int argc, char *argv[]) {
             BOOST_LOG_TRIVIAL(fatal) << ex.what();
             BOOST_LOG_TRIVIAL(fatal) << "application will be stopped";
             signal_num = SIGABRT;
-            state.stop_app();
+            va::StateApp::instance().stop_app();
         }
     });
 
@@ -119,8 +118,7 @@ int main(int argc, char *argv[]) {
         va::Server server(io_context, settings.port());
         io_context.run();
     });
-
-    state.wait_stop_app();
+    va::StateApp::instance().wait_stop_app();
     io_context.stop();
     if (th.joinable()) {
         th.join();
