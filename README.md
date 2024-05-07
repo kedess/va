@@ -23,7 +23,7 @@
 ```
 - уровень логирования приложения (debug, info, warning, error), по умолчанию info
 ```bash
---logging-level
+--log-level
 ```
 
 Пример файла со списком видео источников:
@@ -62,7 +62,7 @@
 ```
 - уровень логирования приложения (debug, info, warning, error), по умолчанию info
 ```bash
---logging-level
+--log-level
 ```
 
 Пример запроса HLS с помощью ffplay, время в UTC
@@ -101,7 +101,7 @@ ffplay http://localhost:8888/camera-1/index.m3u8
 ```
 - уровень логирования приложения (debug, info, warning, error), по умолчанию info
 ```bash
---logging-level
+--log-level
 ```
 
 В репозитории на данный момент присутствиет пример для инференса на YOLO V5

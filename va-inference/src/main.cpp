@@ -52,8 +52,8 @@ int main(int argc, char *argv[]) {
                            "inference server port, default 3030");
         desc.add_options()("num-threads", opt::value<size_t>()->default_value(1),
                            "number of parallel threads, default 1");
-        desc.add_options()("logging-level", opt::value<std::string>()->default_value("info"),
-                           "logging level (debug, info, warning, error), default 'info'");
+        desc.add_options()("log-level", opt::value<std::string>()->default_value("info"),
+                           "log level (debug, info, warning, error), default 'info'");
         desc.add_options()("help,h", "help");
         opt::variables_map vm;
         opt::store(opt::parse_command_line(argc, argv, desc), vm);
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
             std::cout << desc << "\n";
             return EXIT_FAILURE;
         }
-        init_logging(vm["logging-level"].as<std::string>());
+        init_logging(vm["log-level"].as<std::string>());
         va::Settings::instance().prefix_archvie_path(vm["prefix-archive-path"].as<std::string>());
         va::Settings::instance().inference_server_address(vm["inference-server-address"].as<std::string>());
         va::Settings::instance().inference_server_port(vm["inference-server-port"].as<int16_t>());

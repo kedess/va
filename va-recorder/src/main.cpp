@@ -53,8 +53,8 @@ int main(int argc, char *argv[]) {
                            "prefix of the path for saving video files, default '/tmp/va'");
         desc.add_options()("duration-file", opt::value<int64_t>()->default_value(10),
                            "duration file seconds, default 10 secs");
-        desc.add_options()("logging-level", opt::value<std::string>()->default_value("info"),
-                           "logging level (debug, info, warning, error), default 'info'");
+        desc.add_options()("log-level", opt::value<std::string>()->default_value("info"),
+                           "log level (debug, info, warning, error), default 'info'");
         desc.add_options()("source-file", opt::value<std::string>()->default_value("sources.json"),
                            "path to source file, default sources.json in current directory");
         desc.add_options()("help,h", "help");
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
             std::cout << desc << "\n";
             return EXIT_FAILURE;
         }
-        init_logging(vm["logging-level"].as<std::string>());
+        init_logging(vm["log-level"].as<std::string>());
         app.prefix_archvie_path(vm["prefix-archive-path"].as<std::string>());
         app.source_file(vm["source-file"].as<std::string>());
         app.duration_file(vm["duration-file"].as<int64_t>());
