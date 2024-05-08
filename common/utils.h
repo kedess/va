@@ -9,6 +9,7 @@ namespace va {
     namespace utils {
         struct Metatada {
             double duration;
+            std::string codec_id;
             bool is_valid = false;
         };
 #pragma GCC diagnostic push
@@ -17,19 +18,24 @@ namespace va {
             std::ifstream in(path);
             std::string start_marker, end_marker;
             double duration;
+            std::string codec_id;
             in >> start_marker;
             if (!in) {
-                return {0, false};
+                return {0, "", false};
             }
             in >> duration;
             if (!in) {
-                return {0, false};
+                return {0, "", false};
+            }
+            in >> codec_id;
+            if (!in) {
+                return {duration, "", false};
             }
             in >> end_marker;
             if (in && start_marker == "START_DATA" && end_marker == "END_DATA") {
-                return {duration, true};
+                return {duration, codec_id, true};
             }
-            return {0, false};
+            return {0, "", false};
         }
         static std::vector<std::string> split(const std::string &s, char delim) {
             std::vector<std::string> elems;

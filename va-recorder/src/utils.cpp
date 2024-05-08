@@ -25,7 +25,8 @@ namespace va {
                                            source.id());
                 throw std::runtime_error(err_msg);
             }
-            return std::format("{}{}:{}@{}", url.substr(0, pos + 3), username, password, url.substr(pos + 3));
+            std::string_view view{url};
+            return std::format("{}{}:{}@{}", view.substr(0, pos + 3), username, password, view.substr(pos + 3));
         }
         std::string format_datetime_to_path(time_t seconds) {
             char buffer[buffer_len];

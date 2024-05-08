@@ -22,15 +22,18 @@ namespace va {
                     ofs << "START_DATA" << std::endl;
                     ofs << static_cast<double>((current_pts_pkt_ - start_pts_pkt_)) * time_base.num / time_base.den
                         << std::endl;
+                    ofs << codec_id() << std::endl;
                     ofs << "END_DATA";
-
                 } else {
                     // TODO: Предполагаю длительность файла равна duration_file_
                     size_t extension_pos{current_file_.rfind(".ts")};
                     auto tmp = std::string(current_file_.begin(), current_file_.end());
                     fs::path path{tmp.replace(extension_pos, 3, ".meta")};
                     std::ofstream ofs(path);
-                    ofs << static_cast<double>(duration_file_);
+                    ofs << "START_DATA" << std::endl;
+                    ofs << static_cast<double>(duration_file_) << std::endl;
+                    ofs << codec_id() << std::endl;
+                    ofs << "END_DATA";
                 }
                 if (pkt->pts != AV_NOPTS_VALUE) {
                     start_pts_pkt_ = pkt->pts;
