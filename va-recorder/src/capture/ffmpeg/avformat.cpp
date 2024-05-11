@@ -14,19 +14,17 @@ namespace va {
         }
     }
     std::unique_ptr<AVFormatContext, void (*)(AVFormatContext *ctx)>
-    va_avformat_alloc_output_context(const char *filename, std::vector<const AVCodecParameters *> &params_list) {
+    va_avformat_alloc_output_context(const char *filename, const AVCodecParameters *video_params) {
         AVFormatContext *ctx = nullptr;
         if (avformat_alloc_output_context2(&ctx, nullptr, nullptr, filename) < 0) {
             throw std::runtime_error("failed to alocate output AVFormatContext");
         }
-        for (auto codec_params : params_list) {
-            auto out_stream = avformat_new_stream(ctx, nullptr);
-            if (!out_stream) {
-                throw std::runtime_error("failed allocating output stream");
-            }
-            if (avcodec_parameters_copy((*out_stream).codecpar, codec_params) < 0) {
-                throw std::runtime_error("failed to copy codec parameters");
-            }
+        auto out_stream = avformat_new_stream(ctx, nullptr);
+        if (!out_stream) {
+            throw std::runtime_error("failed allocating output stream");
+        }
+        if (avcodec_parameters_copy((*out_stream).codecpar, video_params) < 0) {
+            throw std::runtime_error("failed to copy codec parameters");
         }
         if (avio_open(&ctx->pb, filename, AVIO_FLAG_WRITE) < 0) {
             auto err_msg = std::format("could not open output file {}", filename);

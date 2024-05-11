@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(va VERSION 0.5.0)
+project(va VERSION 0.6.0)
 
 configure_file (version.h.in ${CMAKE_CURRENT_SOURCE_DIR}/version.h @ONLY)
 

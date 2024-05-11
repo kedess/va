@@ -19,7 +19,7 @@ namespace va {
     }
 
     std::unique_ptr<AVFormatContext, void (*)(AVFormatContext *ctx)>
-    va_avformat_alloc_output_context(const char *filename, std::vector<const AVCodecParameters *> &params_list);
+    va_avformat_alloc_output_context(const char *filename, const AVCodecParameters *video_params);
 
     inline std::unique_ptr<AVFormatContext, void (*)(AVFormatContext *ctx)> va_avformat_null_alloc_output_context() {
         return std::unique_ptr<AVFormatContext, void (*)(AVFormatContext * ctx)>(nullptr, release_output_context);

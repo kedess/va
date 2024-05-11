@@ -63,19 +63,21 @@ namespace va {
                 sleep_and_test(stoken, 5);
                 continue;
             }
-            ssize_t video_idx = -1;
-            auto params_list = stream_params(ctx.get(), source_.id(), video_idx);
-            if (params_list.empty()) {
-                auto err_msg = std::format("not found audio and video channels for stream ({})", source_.id());
+            int video_idx;
+            auto video_params = stream_video_params(ctx.get(), source_.id(), video_idx);
+            if (!video_params) {
+                auto err_msg = std::format("not found video channels for stream ({})", source_.id());
                 BOOST_LOG_TRIVIAL(error) << err_msg;
                 sleep_and_test(stoken, 5);
                 continue;
             }
             try {
-                Archive archive(prefix_archive_path, duration, params_list, video_idx);
+                Archive archive(prefix_archive_path, duration, video_params);
                 const auto pkt = va::va_avpacket_alloc();
                 while (!stoken.stop_requested() && av_read_frame(ctx.get(), pkt.get()) == 0) {
-                    archive.send_pkt(pkt.get(), ctx.get());
+                    if (pkt.get()->stream_index == video_idx) {
+                        archive.send_pkt(pkt.get(), ctx.get());
+                    }
                     update_time_point();
                     av_packet_unref(pkt.get());
                 }

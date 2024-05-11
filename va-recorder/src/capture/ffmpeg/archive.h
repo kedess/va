@@ -16,35 +16,22 @@ namespace fs = std::filesystem;
 namespace va {
     class Archive final {
     public:
-        Archive(std::string &prefix_path, int64_t duration, std::vector<const AVCodecParameters *> params_list,
-                ssize_t video_idx)
-            : prefix_path_(prefix_path), duration_file_(duration), params_list_(params_list), video_idx_(video_idx) {
+        Archive(std::string &prefix_path, int64_t duration, const AVCodecParameters *video_params)
+            : prefix_path_(prefix_path), duration_file_(duration), video_params_(video_params) {
         }
         ~Archive() {
             if (ctx_) {
                 av_write_trailer(ctx_.get());
                 BOOST_LOG_TRIVIAL(debug) << "file " << current_file_ << " recording has finished";
-                if (start_pts_pkt_ != AV_NOPTS_VALUE && current_pts_pkt_ != AV_NOPTS_VALUE && time_base_) {
-                    auto time_base = time_base_.value();
-                    size_t extention_pos{current_file_.find(".ts")};
-                    auto tmp = std::string(current_file_.begin(), current_file_.end());
-                    fs::path path{tmp.replace(extention_pos, 3, ".meta")};
-                    std::ofstream ofs(path);
-                    ofs << "START_DATA" << std::endl;
-                    ofs << static_cast<double>((current_pts_pkt_ - start_pts_pkt_)) * time_base.num / time_base.den;
-                    ofs << codec_id() << std::endl;
-                    ofs << "END_DATA";
-                } else {
-                    // TODO: Предполагаю длительность файла равна duration_file_
-                    size_t extension_pos{current_file_.find(".ts")};
-                    auto tmp = std::string(current_file_.begin(), current_file_.end());
-                    fs::path path{tmp.replace(extension_pos, 3, ".meta")};
-                    std::ofstream ofs(path);
-                    ofs << "START_DATA" << std::endl;
-                    ofs << static_cast<double>(duration_file_) << std::endl;
-                    ofs << codec_id() << std::endl;
-                    ofs << "END_DATA";
-                }
+                auto time_base = time_base_.value();
+                size_t extention_pos{current_file_.find(".ts")};
+                auto tmp = std::string(current_file_.begin(), current_file_.end());
+                fs::path path{tmp.replace(extention_pos, 3, ".meta")};
+                std::ofstream ofs(path);
+                ofs << "START_DATA" << std::endl;
+                ofs << static_cast<double>((current_pts_pkt_ - start_pts_pkt_)) * time_base.num / time_base.den;
+                ofs << codec_id() << std::endl;
+                ofs << "END_DATA";
             }
         }
         Archive(const Archive &) = delete;
@@ -54,10 +41,7 @@ namespace va {
         void send_pkt(AVPacket *pkt, AVFormatContext *ctx_in);
 
         const char *codec_id() {
-            if (video_idx_ == -1) {
-                return "Undefined";
-            }
-            return avcodec_get_name(params_list_[static_cast<size_t>(video_idx_)]->codec_id);
+            return avcodec_get_name(video_params_->codec_id);
         }
 
     private:
@@ -68,8 +52,7 @@ namespace va {
         int64_t start_pts_pkt_ = AV_NOPTS_VALUE;
         int64_t current_pts_pkt_ = AV_NOPTS_VALUE;
         std::optional<AVRational> time_base_;
-        std::vector<const AVCodecParameters *> params_list_;
-        ssize_t video_idx_;
+        const AVCodecParameters *video_params_;
         std::unique_ptr<AVFormatContext, void (*)(AVFormatContext *ctx)> ctx_ = va_avformat_null_alloc_output_context();
     };
 } // namespace va

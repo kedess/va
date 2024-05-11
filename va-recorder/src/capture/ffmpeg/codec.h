@@ -6,6 +6,5 @@ extern "C" {
 }
 
 namespace va {
-    std::vector<const AVCodecParameters *> stream_params(AVFormatContext *ctx, const std::string &id,
-                                                         ssize_t &video_idx);
+    const AVCodecParameters *stream_video_params(AVFormatContext *ctx, const std::string &id, int &video_idx);
 } // namespace va
