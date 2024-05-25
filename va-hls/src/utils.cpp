@@ -84,7 +84,7 @@ namespace va {
                 auto path_meta =
                     std::format("{}/{}/{}/{}/{}/{}/{}.meta", va::Settings::instance().prefix_archive_path(),
                                 params.stream_id, params.year, params.month, params.day, params.hour, filename.c_str());
-                auto meta = va::utils::parse_metadatat_file(path_meta);
+                auto meta = va::utils::parse_metadata_file(path_meta);
                 if (meta.is_valid) {
                     auto path = std::format("{}.ts", filename.c_str());
                     auto item = std::format("#EXTINF:{}\n{}\n", meta.duration, path);
@@ -107,7 +107,7 @@ namespace va {
             for (auto path : queue_ref) {
                 auto path_meta = std::format("{}/{}", va::Settings::instance().prefix_archive_path(), path);
                 path_meta = path_meta.replace(path_meta.size() - 2, params.stream_id.size(), "meta");
-                auto meta = va::utils::parse_metadatat_file(path_meta);
+                auto meta = va::utils::parse_metadata_file(path_meta);
                 if (meta.is_valid) {
                     auto tmp = std::string(path.begin(), path.end());
                     auto path_without_prefix = tmp.replace(0, params.stream_id.size() + 1, "");

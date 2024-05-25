@@ -14,7 +14,7 @@ namespace va {
         };
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
-        static Metatada parse_metadatat_file(const std::string &path) {
+        static Metatada parse_metadata_file(const std::string &path) {
             std::ifstream in(path);
             std::string start_marker, end_marker;
             double duration;
@@ -29,7 +29,7 @@ namespace va {
             }
             in >> codec_id;
             if (!in) {
-                return {duration, "", false};
+                return {0, "", false};
             }
             in >> end_marker;
             if (in && start_marker == "START_DATA" && end_marker == "END_DATA") {
