@@ -21,6 +21,7 @@ namespace va {
         }
         ~Archive() {
             if (ctx_) {
+                av_interleaved_write_frame(ctx_.get(), nullptr);
                 av_write_trailer(ctx_.get());
                 BOOST_LOG_TRIVIAL(debug) << "file " << current_file_ << " recording has finished";
                 auto time_base = time_base_.value();
@@ -31,7 +32,8 @@ namespace va {
                 ofs << "START_DATA" << std::endl;
                 ofs << static_cast<double>((current_pts_pkt_ - start_pts_pkt_)) * time_base.num / time_base.den;
                 ofs << codec_id() << std::endl;
-                ofs << "END_DATA";
+                ofs << "END_DATA" << std::endl;
+                ;
             }
         }
         Archive(const Archive &) = delete;

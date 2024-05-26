@@ -19,6 +19,7 @@ namespace va {
         if (is_key && ctx_) {
             auto tp = std::chrono::steady_clock::now();
             if (std::chrono::duration_cast<std::chrono::seconds>(tp - time_point_).count() > duration_file_) {
+                av_interleaved_write_frame(ctx_.get(), nullptr);
                 ctx_.reset(nullptr);
                 BOOST_LOG_TRIVIAL(debug) << "file " << current_file_ << " recording has finished";
                 auto time_base = time_base_.value();
@@ -30,7 +31,7 @@ namespace va {
                 ofs << static_cast<double>((current_pts_pkt_ - start_pts_pkt_)) * time_base.num / time_base.den
                     << std::endl;
                 ofs << codec_id() << std::endl;
-                ofs << "END_DATA";
+                ofs << "END_DATA" << std::endl;
                 start_pts_pkt_ = AV_NOPTS_VALUE;
             }
         }

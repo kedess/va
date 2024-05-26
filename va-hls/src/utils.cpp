@@ -20,7 +20,8 @@ namespace fs = std::filesystem;
 extern std::map<std::string, va::PlayList> playlists;
 extern std::shared_mutex mutex_playlists;
 
-const char *HEADER_PLAYLIST = "#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-MEDIA-SEQUENCE:0\n#EXT-X-TARGETDURATION:5\n";
+const char *HEADER_PLAYLIST =
+    "#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-PLAYLIST-TYPE:VOD\n#EXT-X-MEDIA-SEQUENCE:0\n#EXT-X-TARGETDURATION:5\n";
 const char *FOOTER_PLAYLIST = "#EXT-X-ENDLIST";
 
 namespace {
@@ -97,7 +98,7 @@ namespace va {
             auto params = std::get<ParamsRequestLive>(variant);
             std::shared_lock lock(mutex_playlists);
             std::string playlist(
-                std::format("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-MEDIA-SEQUENCE:{}\n#EXT-X-TARGETDURATION:5\n",
+                std::format("#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-MEDIA-SEQUENCE:{}\n#EXT-X-TARGETDURATION:4\n",
                             playlists[params.stream_id].index));
             auto it = playlists.find(params.stream_id);
             if (it == playlists.end()) {
@@ -111,7 +112,7 @@ namespace va {
                 if (meta.is_valid) {
                     auto tmp = std::string(path.begin(), path.end());
                     auto path_without_prefix = tmp.replace(0, params.stream_id.size() + 1, "");
-                    auto item = std::format("#EXTINF:{}\n{}\n", meta.duration, path_without_prefix);
+                    auto item = std::format("#EXTINF:{},live\n{}\n", meta.duration, path_without_prefix);
                     playlist.append(item);
                 }
             }
