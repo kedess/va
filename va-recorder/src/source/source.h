@@ -4,12 +4,7 @@
 #pragma GCC diagnostic ignored "-Wclass-memaccess"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include "../../../rapidjson/document.h"
-#include "../../../rapidjson/filereadstream.h"
-#include "../../../rapidjson/rapidjson.h"
-#include "../../../rapidjson/reader.h"
 #pragma GCC diagnostic pop
-#include <fstream>
-#include <iostream>
 #include <optional>
 #include <string>
 #include <vector>

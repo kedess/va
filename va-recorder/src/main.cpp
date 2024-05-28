@@ -1,7 +1,5 @@
 #include "../../common/state.h"
 #include "app.h"
-#include "capture/capture.h"
-#include "capture/ffmpeg/backend.h"
 #include "source/source.h"
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -9,8 +7,7 @@
 #include <boost/program_options.hpp>
 #include <csignal>
 #include <cstdlib>
-#include <memory>
-#include <thread>
+#include <iostream>
 
 extern "C" {
 #include <libavdevice/avdevice.h>

@@ -1,5 +1,6 @@
 #include "source.h"
 #include <format>
+#include <fstream>
 
 namespace va {
     std::vector<Source> load_sources_from_file(const char *filepath) {
