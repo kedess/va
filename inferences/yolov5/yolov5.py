@@ -20,7 +20,7 @@ def threaded(conn, model):
 			if not data:
 				break
 			if buffer_len == -1:
-				buffer_len = int.from_bytes(data[:8], byteorder='little')
+				buffer_len = int.from_bytes(data[:8], byteorder='big')
 				buffer.write(data[8:])
 			else:
 				buffer.write(data)

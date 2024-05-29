@@ -32,9 +32,13 @@ namespace va {
 
         boost::asio::connect(socket, resolver.resolve(inference_uri_, std::to_string(inference_port_)));
         auto buffer_len = static_cast<int64_t>(buffer.size());
-        char bytes[8] = {0};
+        char bytes[sizeof(buffer_len)];
+
         std::copy(static_cast<const char *>(static_cast<const void *>(&buffer_len)),
                   static_cast<const char *>(static_cast<const void *>(&buffer_len)) + sizeof(buffer_len), bytes);
+        if (std::endian::native == std::endian::little) {
+            std::reverse(std::begin(bytes), std::end(bytes));
+        }
 
         boost::asio::write(socket, boost::asio::buffer(bytes));
         boost::asio::write(socket, boost::asio::buffer(buffer));
